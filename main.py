@@ -8,7 +8,7 @@ import datetime
 ######################
 # Wohnungsparameter
 ######################
-Wohnung = 320000
+Wohnung = 100000
 Stellplatz = 0
 Wertsteigerung_Immobilie_pro_Jahr = 0.04
 Anschaffungsbetrag = Wohnung + Stellplatz
@@ -17,15 +17,15 @@ kaufnebenkosten_prozent = 0.1
 ######################
 # Angaben zum Kreditvertrag
 ######################
-Eigenanteil = 75000
+Eigenanteil = 2000
 Zinssatz = 0.035
-eigenbeitrag_mtl = 200
+eigenbeitrag_mtl = 0
 sondertilgung = 0
 
 ######################
 # Annahmen zum Mietvertrag
 ######################
-kaltmiete = 900
+kaltmiete = 600
 hausgeld = 70
 
 ######################
@@ -37,7 +37,7 @@ erwartete_Rendite_am_Kapitalmarkt = 0.06
 # Sonstige Annahmen
 ######################
 einkommensteuersatz = 0.3
-Kapitalkostensatz = 0.04
+Kapitalkostensatz = 0.03
 
 
 ##############################################################################
@@ -75,6 +75,9 @@ try:
     df.loc[startjahr + kreditlaufzeit,:] = [0,0,0,abschreibung,abschreibung-monatl_mietertrag*12,
                                             df.iloc[-1,:]["Cash Flow"] + Anschaffungsbetrag *
                                             (1 + Wertsteigerung_Immobilie_pro_Jahr) ** kreditlaufzeit]
+    zusatzinvest = sondertilgung + eigenbeitrag_mtl
+    endwert_kapitalmarkt = -Eigenanteil + zusatzinvest * (1+erwartete_Rendite_am_Kapitalmarkt)**kreditlaufzeit
+    kapitalwert_kapitalmarkt = endwert_kapitalmarkt * (1+Kapitalkostensatz)**-kreditlaufzeit
     print(df)
     print("Kreditlaufzeit " + str(kreditlaufzeit) + " Jahre")
 
