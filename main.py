@@ -8,16 +8,16 @@ import datetime
 ######################
 # Wohnungsparameter
 ######################
-Wohnung = 320000
+Wohnung = 100000
 Stellplatz = 0
-Wertsteigerung_Immobilie_pro_Jahr = 0.04
+Wertsteigerung_Immobilie_pro_Jahr = 0.02
 Anschaffungsbetrag = Wohnung + Stellplatz
 kaufnebenkosten_prozent = 0.1
 
 ######################
 # Angaben zum Kreditvertrag
 ######################
-Eigenanteil = 75000
+Eigenanteil = 10000
 Zinssatz = 0.035
 eigenbeitrag_mtl = 200
 sondertilgung = 0
