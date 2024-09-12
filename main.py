@@ -8,30 +8,30 @@ import datetime
 ######################
 # Wohnungsparameter
 ######################
-Wohnung = 100000
+Wohnung = 379000
 Stellplatz = 0
-Wertsteigerung_Immobilie_pro_Jahr = 0.04
+Wertsteigerung_Immobilie_pro_Jahr = 0.03
 Anschaffungsbetrag = Wohnung + Stellplatz
 kaufnebenkosten_prozent = 0.1
 
 ######################
 # Angaben zum Kreditvertrag
 ######################
-Eigenanteil = 2000
-Zinssatz = 0.035
-eigenbeitrag_mtl = 0
-sondertilgung = 0
+Eigenanteil = 80000
+Zinssatz = 0.032
+eigenbeitrag_mtl = 500
+sondertilgung = 2000
 
 ######################
 # Annahmen zum Mietvertrag
 ######################
-kaltmiete = 600
-hausgeld = 70
+kaltmiete = 935
+hausgeld = 60
 
 ######################
 # Option: Anlage am Kapitalmarkt
 ######################
-erwartete_Rendite_am_Kapitalmarkt = 0.06
+erwartete_Rendite_am_Kapitalmarkt = 0.07
 
 ######################
 # Sonstige Annahmen
@@ -58,7 +58,7 @@ restschuld = Kreditsumme
 abschreibung = 0
 startjahr = datetime.date.today().year + 1
 for i in range(startjahr, 2150):
-    if i == 2026:
+    if i == startjahr:
         restschuld=restschuld
     else:
         restschuld=restschuld - (Monatl_an_bank*12 - restschuld * Zinssatz)
@@ -70,7 +70,6 @@ for i in range(startjahr, 2150):
     df.loc[i] = [restschuld, zinsen, tilgung, abschreibung, steuern, cf]
 try:
     kreditlaufzeit = df.index[df["Restschuld"]<0][0] - startjahr
-    df = df[startjahr < df.index]
     df = df[df.index <= startjahr + kreditlaufzeit]
     df.loc[startjahr + kreditlaufzeit,:] = [0,0,0,abschreibung,abschreibung-monatl_mietertrag*12,
                                             df.iloc[-1,:]["Cash Flow"] + Anschaffungsbetrag *
@@ -86,6 +85,7 @@ try:
     print(f"Kapitalwert einer Kapitalmarktinvestition: "
           f"{(-Eigenanteil + (Eigenanteil *  (1 + erwartete_Rendite_am_Kapitalmarkt) ** kreditlaufzeit)* (1/(1+Kapitalkostensatz)**kreditlaufzeit)):.2f}")
     print("Monatliche Belastung: " + str(eigenbeitrag_mtl))
+    print("Jährliche Mieteinnahmen: " + str(monatl_mietertrag * 12))
 except IndexError:
     logging.warning("Ausgaben für Kredit sind aktuell zu hoch: Entweder höherer Monatl. Mietertrag oder höhere "
                     "Sondertilgung oder höherer Eigenbeitrag_mtl")
