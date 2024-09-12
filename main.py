@@ -8,16 +8,16 @@ import datetime
 ######################
 # Wohnungsparameter
 ######################
-Wohnung = 379000
+Wohnung = 100000
 Stellplatz = 0
-Wertsteigerung_Immobilie_pro_Jahr = 0.03
+Wertsteigerung_Immobilie_pro_Jahr = 0.02
 Anschaffungsbetrag = Wohnung + Stellplatz
 kaufnebenkosten_prozent = 0.1
 
 ######################
 # Angaben zum Kreditvertrag
 ######################
-Eigenanteil = 80000
+Eigenanteil = 10000
 Zinssatz = 0.032
 eigenbeitrag_mtl = 500
 sondertilgung = 2000
@@ -25,13 +25,13 @@ sondertilgung = 2000
 ######################
 # Annahmen zum Mietvertrag
 ######################
-kaltmiete = 935
+kaltmiete = 500
 hausgeld = 60
 
 ######################
 # Option: Anlage am Kapitalmarkt
 ######################
-erwartete_Rendite_am_Kapitalmarkt = 0.07
+erwartete_Rendite_am_Kapitalmarkt = 0.06
 
 ######################
 # Sonstige Annahmen
@@ -74,16 +74,19 @@ try:
     df.loc[startjahr + kreditlaufzeit,:] = [0,0,0,abschreibung,abschreibung-monatl_mietertrag*12,
                                             df.iloc[-1,:]["Cash Flow"] + Anschaffungsbetrag *
                                             (1 + Wertsteigerung_Immobilie_pro_Jahr) ** kreditlaufzeit]
-    zusatzinvest = sondertilgung + eigenbeitrag_mtl
-    endwert_kapitalmarkt = -Eigenanteil + zusatzinvest * (1+erwartete_Rendite_am_Kapitalmarkt)**kreditlaufzeit
-    kapitalwert_kapitalmarkt = endwert_kapitalmarkt * (1+Kapitalkostensatz)**-kreditlaufzeit
     print(df)
     print("Kreditlaufzeit " + str(kreditlaufzeit) + " Jahre")
-
-    abgezinst = [-Eigenanteil] + [x * (float(1) + Kapitalkostensatz) ** -float(n) for (n, x) in enumerate(df["Cash Flow"])]
-    print(f"Kapitalwert der Immobilieninvestition: {sum(abgezinst):.2f}")
+    zusatzinvest = sondertilgung + eigenbeitrag_mtl*12
+    kapitalwert_kapitalmarkt = sum([-Eigenanteil] + [(zusatzinvest * (1+erwartete_Rendite_am_Kapitalmarkt)**(kreditlaufzeit-n))*(1+Kapitalkostensatz)**-kreditlaufzeit for n in range(0,kreditlaufzeit)])
+    kapitalwert_immo = sum([-Eigenanteil] + [x * (float(1) + Kapitalkostensatz) ** -float(n) for (n, x) in enumerate(df["Cash Flow"])])
+    print(f"Kapitalwert der Immobilieninvestition: {kapitalwert_immo:.2f}")
     print(f"Kapitalwert einer Kapitalmarktinvestition: "
-          f"{(-Eigenanteil + (Eigenanteil *  (1 + erwartete_Rendite_am_Kapitalmarkt) ** kreditlaufzeit)* (1/(1+Kapitalkostensatz)**kreditlaufzeit)):.2f}")
+          f"{kapitalwert_kapitalmarkt:.2f}")
+    if kapitalwert_kapitalmarkt > kapitalwert_immo:
+        print("Anlage am Kapitalmarkt vorteilhaft gegenüber Immobilieninvestition!")
+    else:
+        print("Immobilieninvestition vorteilhaft gegenüber Anlage am Kapitalmarkt!")
+
     print("Monatliche Belastung: " + str(eigenbeitrag_mtl))
     print("Jährliche Mieteinnahmen: " + str(monatl_mietertrag * 12))
 except IndexError:
