@@ -15,25 +15,25 @@ import datetime
 ######################
 # Wohnungsparameter
 ######################
-Wohnung = 150000
-Stellplatz = 20000
-Wertsteigerung_Immobilie_pro_Jahr = 0.04
+Wohnung = 100
+Stellplatz = 10
+Wertsteigerung_Immobilie_pro_Jahr = 0.03
 Anschaffungsbetrag = Wohnung + Stellplatz
 kaufnebenkosten_prozent = 0.1
 
 ######################
 # Angaben zum Kreditvertrag
 ######################
-Eigenanteil = 20000
+Eigenanteil = 10
 Zinssatz = 0.032
-eigenbeitrag_mtl = 70
+eigenbeitrag_mtl = 1
 sondertilgung = 0
 
 ######################
 # Annahmen zum Mietvertrag
 ######################
-kaltmiete = 935
-hausgeld = 60
+kaltmiete = 10
+hausgeld = 10
 
 ######################
 # Option: Anlage am Kapitalmarkt
@@ -44,7 +44,7 @@ erwartete_Rendite_am_Kapitalmarkt = 0.05
 # Sonstige Annahmen
 ######################
 einkommensteuersatz = 0.3
-Kapitalkostensatz = 0.03
+Kapitalkostensatz = 0.05
 
 
 ##############################################################################
@@ -73,7 +73,10 @@ for i in range(startjahr, 2150):
     tilgung = (Monatl_an_bank * 12 - zinsen) if restschuld > 0 else 0
     abschreibung = Anschaffungsbetrag * 0.02 if i < 100/0.02 else 0
     steuern = (zinsen + abschreibung - monatl_mietertrag * 12) * einkommensteuersatz
-    cf = -zinsen - tilgung + steuern + monatl_mietertrag * 12
+    if i == startjahr:
+        cf = -zinsen - tilgung + steuern + monatl_mietertrag * 12 - Eigenanteil
+    else:
+        cf = -zinsen - tilgung + steuern + monatl_mietertrag * 12
     df.loc[i] = [restschuld, zinsen, tilgung, abschreibung, steuern, cf]
 try:
     kreditlaufzeit = df.index[df["Restschuld"] < 0][0] - startjahr
@@ -84,12 +87,13 @@ try:
     print(df)
     print("Kreditlaufzeit " + str(kreditlaufzeit) + " Jahre")
     zusatzinvest = sondertilgung + eigenbeitrag_mtl * 12
-    cf_kap_markt = [float(-Eigenanteil)] + [-zusatzinvest * (1+Kapitalkostensatz) ** (-(kreditlaufzeit-n)) for n in range(1,kreditlaufzeit)]
+    cf_kap_markt = [float(-Eigenanteil) - float(zusatzinvest * 12)] + [-zusatzinvest * (1+Kapitalkostensatz) ** (-(kreditlaufzeit-n)) for n in range(0,kreditlaufzeit)]
     cf_kap_markt[-1] = cf_kap_markt[-1] + sum(
         [zusatzinvest * (1 + erwartete_Rendite_am_Kapitalmarkt) ** kreditlaufzeit - n for n in
-         range(1, kreditlaufzeit)])
+         range(0, kreditlaufzeit)])
     kapitalwert_kapitalmarkt = sum(cf_kap_markt)
     kapitalwert_immo = sum([-Eigenanteil] + [x * (float(1) + Kapitalkostensatz) ** -float(n) for (n, x) in enumerate(df["Cash Flow"])])
+    print(cf_kap_markt)
     print(f"Kapitalwert der Immobilieninvestition: {kapitalwert_immo:.2f}")
     print(f"Kapitalwert einer Kapitalmarktinvestition: "
           f"{kapitalwert_kapitalmarkt:.2f}")
